@@ -1,0 +1,108 @@
+<style>
+  body {
+    padding: 50px;
+    font: 14px Helvetica, Arial;
+  }
+  form {
+    display: inline-block;
+    border: 1px solid #eee;
+    padding: 15px 20px;
+  }
+</style>
+
+<script src="../build/build.js"></script>
+<div id="todos">
+  <div>
+    <input type="text" id="name">
+    <button on-click="add">Add Todo</button>
+  </div>
+  <ul> 
+    <li each="todo in todos by name">
+      <input type="checkbox" data-checked="completed" on-change="setCompleted">
+      <a on-click="edit" href="#/edit/{name}" class="name">{name}</a>
+      <button on-click="moveUp">&uarr;</button>
+      <button on-click="moveDown">&darr;</button>
+      <button on-click="delete">x</button>
+    </li>
+  </ul>
+</div>
+ <script>
+   var reactive = require('reactive')
+     , emitter = require('emitter')
+
+  reactive.bind('each', require('reactive-each'))
+  function TodoList() {
+    this.todos = []
+  }
+  emitter(TodoList.prototype)
+
+  TodoList.prototype.add = function (name) {
+    this.todos.push(new Todo(name))
+    this.emit('change todos')
+  }
+  function Todo(name) {
+    this.complete = false;
+    this.name = name;
+  }
+  emitter(Todo.prototype);
+  Todo.prototype.set = function(name, value) {
+    this[name] = value
+    this.emit('change ' + name, value)
+  }
+  Todo.prototype.get = function(name) {
+    return this[name]
+  }
+  var model = new TodoList()
+  var view = reactive(document.getElementById("todos"), model, {
+    add: function(e) {
+      model.add(document.getElementById('name').value)
+      document.getElementById('name').value = ''
+    },
+    edit: function(e) {
+      var newValue = prompt('Edit Todo: ', this.model.name)
+      this.model.set('name', newValue)
+    },
+    delete: function() {
+      var name = this.model.name;
+      var index = getTodoIndex(name);
+      if (index > -1)
+        model.todos.splice(index, 1);
+      model.emit('change todos');
+    },
+    moveDown: function() {
+      var name = this.model.name;
+      var index = getTodoIndex(name);
+      if (index > -1 && index + 1 < model.todos.length) {
+         model.todos[index] = model.todos[index + 1]
+         model.todos[index + 1] = this.model;
+      }
+      model.emit('change todos')
+    },
+    moveUp: function() {
+      var name = this.model.name;
+      var index = getTodoIndex(name);
+      if (index > -1 && index - 1 > -1) {
+         model.todos[index] = model.todos[index - 1]
+         model.todos[index - 1] = this.model;
+      }
+      console.log('in up', model.todos)
+      model.emit('change todos')
+    },
+
+    setCompleted: function(e) {
+      var value = e.target.value === "on";
+      if (this.model.get('complete') !== value) {
+        console.log('setting value')
+        this.model.set('complete', value)
+      }
+    }
+  })
+
+  function getTodoIndex(name) {
+    for (var i = 0; i < model.todos.length; i++) {
+      if (model.todos[i].name === name) return i
+    }
+    return -1;
+  }
+</script>
+

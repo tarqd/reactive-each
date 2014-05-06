@@ -1,0 +1,21 @@
+{
+  "name": "reactive-each",
+  "repo": "ilsken/reactive-each",
+  "description": "Angular-Like each binding for Reactive",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {
+    "component/reactive": "*",
+    "component/emitter": "*",
+    "component/type": "*"
+  },
+  "development": {},
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": [
+    "index.js",
+    "lcs.js",
+    "differ.js"
+  ],
+  "remotes": []
+}
